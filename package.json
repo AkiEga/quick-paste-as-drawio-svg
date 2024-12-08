@@ -50,7 +50,7 @@
     }
   },
   "scripts": {
-    "vscode:publish": "vsce publish minor -p $env:VSCODE_EXT_API_TOKEN",
+    "vscode:publish": "vsce publish minor",
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
