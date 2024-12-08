@@ -28,6 +28,3 @@ This extension, "quick-paste-as-drawio-svg," is designed to enhance the Visual S
 ## Known Issues
 - 
 
-## Release Notes
-- 0.1.0
-	- First Release
