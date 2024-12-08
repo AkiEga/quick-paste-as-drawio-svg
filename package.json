@@ -1,8 +1,14 @@
 {
   "name": "quick-paste-as-drawio-svg",
   "displayName": "quick-paste-as-drawio-svg",
+  "publisher": "akiega",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AkiEga/quick-paste-as-drawio-svg"
+  },
   "description": "",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.95.0"
   },
