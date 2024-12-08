@@ -12,12 +12,36 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "quick-paste-as-drawio-svg",
+      "properties": {
+        "quick-paste-as-drawio-svg.img-dir": {
+          "type": "string",
+          "default": "img",
+          "description": "The directory where the drawio.svg files will be created"
+        },
+        "quick-paste-as-drawio-svg.img-file-prefix": {
+          "type": "string",
+          "default": "temp",
+          "description": "The prefix of the drawio.svg files"
+        }
+      }
+    },
     "commands": [
       {
-        "command": "quick-paste-as-drawio-svg.helloWorld",
-        "title": "Hello World"
+        "command": "quick-paste-as-drawio-svg.create-new-drawio-svg",
+        "title": "quick-paste-as-drawio-svg: create new drawio.svg file"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "quick-paste-as-drawio-svg.create-new-drawio-svg",
+          "when": "editorTextFocus && resourceExtname == .md",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
