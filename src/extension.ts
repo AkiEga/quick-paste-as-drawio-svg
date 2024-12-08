@@ -4,6 +4,34 @@ import * as vscode from 'vscode';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import ChildProcess from 'child_process';
+
+// read clipboard image data as Uint8Array
+function readClipboardImage():Uint8Array {
+	let imgData:Uint8Array = new Uint8Array(0);
+	try {
+		// exec command to get clipboard image data with powershell		
+		let base64Str = "";
+		if (os.platform() === "win32") {
+			let pwshcmd = `Add-Type -AssemblyName System.Windows.Forms;
+			$image = [System.Windows.Forms.Clipboard]::GetImage()
+			$ms = New-Object -TypeName System.IO.MemoryStream;
+			$image.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png);
+			$encoded = [System.Convert]::ToBase64String($ms.GetBuffer());
+			Write-Host $encoded`;
+			// exec command to get clipboard image data with powershell
+			base64Str = ChildProcess.execSync(pwshcmd, {shell: "pwsh.exe", encoding: "utf8"});
+		} else {
+			vscode.window.showInformationMessage(`This extension is not support this platform: ${os.platform()}!`);
+		}
+
+		// convert base64 string to Uint8Array
+		imgData = new Uint8Array(Buffer.from(base64Str, "base64"));
+	} catch (error) {
+		console.error("[Error] failed to read clipboard image data!");
+	}
+	return imgData;	
+}
 
 async function touchSvgFile() {
 	// The code you place here will be executed every time your command is executed
