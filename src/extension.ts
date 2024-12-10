@@ -89,7 +89,7 @@ async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.Works
 			let conf = vscode.workspace.getConfiguration("quick-paste-as-drawio-svg");
 			let imgDir:string = conf.get("img-dir")??"";
 			let prefix:string = conf.get("img-file-prefix") ?? "";
-			newFileUri = GenNewFileUri(ws, imgDir, prefix);		
+			newFileUri = await GenNewFileUri(ws, imgDir, prefix);		
 			createDrawioSvgFile(newFileUri, ci);
 			
 			vscode.window.showInformationMessage(`write new file: ${newFileUri} from quick-paste-as-drawio-svg!`);
@@ -122,7 +122,7 @@ async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.Works
 	});
 }
 
-function GenNewFileUri(ws: vscode.WorkspaceFolder, imgDir: string = "", prefix: string = ""): vscode.Uri {
+async function GenNewFileUri(ws: vscode.WorkspaceFolder, imgDir: string = "", prefix: string = ""): Promise<vscode.Uri> {
 	let newFileUri: vscode.Uri;
 	for (let id = 0; ; id++) {
 		let newFileName = `${prefix}_${id}.drawio.svg`;
@@ -132,7 +132,19 @@ function GenNewFileUri(ws: vscode.WorkspaceFolder, imgDir: string = "", prefix: 
 			break;
 		}
 	}
-	return newFileUri;
+
+	// show input box to change file name
+	let inputBoxOptions: vscode.InputBoxOptions = {
+		prompt: "Enter a new file name",
+		value: newFileUri.fsPath,
+		valueSelection: [path.dirname(newFileUri.fsPath).length + 1, newFileUri.fsPath.length - ".drawio.svg".length],
+	};
+	let filePathFromInputBox = await vscode.window.showInputBox(inputBoxOptions) ?? "";
+	if (filePathFromInputBox !== "") {
+		newFileUri = vscode.Uri.file(filePathFromInputBox);
+	}
+	
+	return Promise.resolve(newFileUri);
 }
 
 // This method is called when your extension is activated
