@@ -20,5 +20,5 @@ suite('Extension Test Suite', () => {
 				assert.strictEqual(ret, expected);
 			});
 		});
+	});
 });
-
