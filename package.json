@@ -8,7 +8,7 @@
     "url": "https://github.com/AkiEga/quick-paste-as-drawio-svg"
   },
   "description": "",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "engines": {
     "vscode": "^1.95.0"
   },
