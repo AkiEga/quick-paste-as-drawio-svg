@@ -13,7 +13,7 @@ class ClipboardImage {
 }
 
 // read clipboard image data as Uint8Array
-function readClipboardImage(): ClipboardImage {
+export function readClipboardImage(): ClipboardImage {
 	let clipboardImage: ClipboardImage = new ClipboardImage();
 	try {
 		// exec command to get clipboard image data with powershell		
@@ -55,7 +55,7 @@ function readClipboardImage(): ClipboardImage {
 	return clipboardImage;
 }
 
-function createDrawioSvgFile(tarUri: vscode.Uri, ci: ClipboardImage) {		
+export function createDrawioSvgFile(tarUri: vscode.Uri, ci: ClipboardImage) {		
 	let newFileContentStr = "";
 	// TODO: implement to write to drawio.svg file
 	// // read base drawio.svg file content
@@ -70,7 +70,32 @@ function createDrawioSvgFile(tarUri: vscode.Uri, ci: ClipboardImage) {
 	vscode.workspace.fs.writeFile(tarUri, newFileContent);	
 }
 
-async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.WorkspaceFolder) {
+export async function resolveImgDir(imgDir: string, editor: vscode.TextEditor | undefined) {
+	let ret = imgDir;
+	// replace ${workspaceFolder} to actual workspace folder path
+	let workspaceFolders = vscode.workspace.workspaceFolders;
+	if (workspaceFolders?.length === 1) {
+		ret = ret.replace(/\${workspaceFolder}/g, workspaceFolders[0].uri.fsPath);
+	}
+	
+	// replace ${workspaceFolder:wsName} to actual workspace folder name
+	let m = RegExp(/\${workspaceFolder:(?<wsName>[^}]+)}/g).exec(imgDir);
+	if (m?.groups?.wsName) {
+		let ws = await vscode.workspace.workspaceFolders?.find(
+			(ws)=>ws.name === m?.groups?.wsName);
+		if (ws) {
+			ret = ret.replace(ws.uri.fsPath, ws.name);
+		}
+	}
+	// replace current dir
+	if (ret.startsWith("./") && editor) {
+		let curDir = path.dirname(editor.document.uri.fsPath);
+		ret = ret.replace(".", curDir);
+	}
+	return ret;
+}
+
+export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.WorkspaceFolder) {
 	// The code you place here will be executed every time your command is executed
 	// Display a message box to the user
 	let pasteMode = "image";
@@ -88,8 +113,9 @@ async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.Works
 			// Check if new file is already exist
 			let conf = vscode.workspace.getConfiguration("quick-paste-as-drawio-svg");
 			let imgDir:string = conf.get("img-dir")??"";
+			imgDir = await resolveImgDir(imgDir, editor);
 			let prefix:string = conf.get("img-file-prefix") ?? "";
-			newFileUri = await GenNewFileUri(ws, imgDir, prefix);		
+			newFileUri = await GenNewFileUri(imgDir, prefix);		
 			createDrawioSvgFile(newFileUri, ci);
 			
 			vscode.window.showInformationMessage(`write new file: ${newFileUri} from quick-paste-as-drawio-svg!`);
@@ -122,11 +148,13 @@ async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscode.Works
 	});
 }
 
-async function GenNewFileUri(ws: vscode.WorkspaceFolder, imgDir: string = "", prefix: string = ""): Promise<vscode.Uri> {
+async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<vscode.Uri> {
+	// convert ${workspaceFolder} to actual workspace folder name
+
 	let newFileUri: vscode.Uri;
 	for (let id = 0; ; id++) {
 		let newFileName = `${prefix}_${id}.drawio.svg`;
-		newFileUri = vscode.Uri.joinPath(ws.uri, imgDir, newFileName);
+		newFileUri = vscode.Uri.joinPath(vscode.Uri.file(imgDir), newFileName);
 		if (!fs.existsSync(newFileUri.fsPath)) {
 			// passed
 			break;
@@ -134,10 +162,12 @@ async function GenNewFileUri(ws: vscode.WorkspaceFolder, imgDir: string = "", pr
 	}
 
 	// show input box to change file name
+	let start = path.dirname(newFileUri.fsPath).length + 1;
+	let end = newFileUri.fsPath.length - ".drawio.svg".length;
 	let inputBoxOptions: vscode.InputBoxOptions = {
 		prompt: "Enter a new file name",
 		value: newFileUri.fsPath,
-		valueSelection: [path.dirname(newFileUri.fsPath).length + 1, newFileUri.fsPath.length - ".drawio.svg".length],
+		valueSelection: [start, end]
 	};
 	let filePathFromInputBox = await vscode.window.showInputBox(inputBoxOptions) ?? "";
 	if (filePathFromInputBox !== "") {
