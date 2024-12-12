@@ -1,5 +1,7 @@
 {
 	// "quick-paste-as-drawio-svg.img-dir": "${workspaceFolder}/img",
-	"quick-paste-as-drawio-svg.img-dir": "./img",
+	// "quick-paste-as-drawio-svg.img-dir": "./img",
+	"quick-paste-as-drawio-svg.img-dir": "img",
+
 	"quick-paste-as-drawio-svg.img-file-prefix": "fig"
 }

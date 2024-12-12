@@ -4,6 +4,7 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "npm: watch",
 			"type": "npm",
 			"script": "watch",
 			"problemMatcher": "$tsc-watch",
@@ -13,7 +14,15 @@
 			},
 			"group": {
 				"kind": "build",
-				"isDefault": true
+			}
+		},
+		{
+			"label": "npm: compile",
+			"type": "npm",
+			"script": "compile",
+			"problemMatcher": "$tsc",
+			"group": {
+				"kind": "build",
 			}
 		}
 	]

@@ -74,17 +74,21 @@ export async function resolveImgDir(imgDir: string, editor: vscode.TextEditor | 
 	let ret = imgDir;
 	// replace ${workspaceFolder} to actual workspace folder path
 	let workspaceFolders = vscode.workspace.workspaceFolders;
-	if (workspaceFolders?.length === 1) {
-		ret = ret.replace(/\${workspaceFolder}/g, workspaceFolders[0].uri.fsPath);
-	}
-	
-	// replace ${workspaceFolder:wsName} to actual workspace folder name
-	let m = RegExp(/\${workspaceFolder:(?<wsName>[^}]+)}/g).exec(imgDir);
-	if (m?.groups?.wsName) {
-		let ws = await vscode.workspace.workspaceFolders?.find(
-			(ws)=>ws.name === m?.groups?.wsName);
-		if (ws) {
-			ret = ret.replace(ws.uri.fsPath, ws.name);
+	if (workspaceFolders && workspaceFolders.length === 1) {
+		if (ret.startsWith("${workspaceFolder}")) {
+			ret = ret.replace(/\${workspaceFolder}/g, workspaceFolders[0].uri.fsPath);
+		} else {
+			ret = path.join(workspaceFolders[0].uri.fsPath, ret);
+		}
+	} else if(workspaceFolders && workspaceFolders.length > 1) {
+		// replace ${workspaceFolder:wsName} to actual workspace folder name
+		let m = RegExp(/\${workspaceFolder:(?<wsName>[^}]+)}/g).exec(imgDir);
+		if (m?.groups?.wsName) {
+			let ws = await vscode.workspace.workspaceFolders?.find(
+				(ws)=>ws.name === m?.groups?.wsName);
+			if (ws) {
+				ret = ret.replace(ws.uri.fsPath, ws.name);
+			}
 		}
 	}
 	// replace current dir
