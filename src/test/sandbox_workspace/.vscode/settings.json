@@ -1,4 +1,5 @@
 {
-	"touch-drawio-svg.img-dir": "img",
-	"touch-drawio-svg.img-file-prefix": "fig"
+	// "quick-paste-as-drawio-svg.img-dir": "${workspaceFolder}/img",
+	"quick-paste-as-drawio-svg.img-dir": "./img",
+	"quick-paste-as-drawio-svg.img-file-prefix": "fig"
 }
