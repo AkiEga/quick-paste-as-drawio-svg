@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "sandbox",
+			"path": "."
+		},
+		{	
+			"name": "root",
+			"path": "../../.."
+		}
+	],
+	"settings": {
+		"quick-paste-as-drawio-svg.img-dir": "${workspaceFolder:sandbox}/img",
+		"quick-paste-as-drawio-svg.img-file-prefix": "fig"
+	}
+}
