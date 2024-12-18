@@ -167,17 +167,24 @@ async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<
 			break;
 		}
 	}
-
+	let newFilePath = newFileUri.fsPath;
+	if (vscode.workspace.workspaceFolders?.length === 1) {
+		newFilePath = path.relative(vscode.workspace.workspaceFolders[0].uri.fsPath, newFilePath);
+	}
+	newFilePath = newFilePath.replace(/\\/g, "/");
 	// show input box to change file name
-	let start = path.dirname(newFileUri.fsPath).length + 1;
-	let end = newFileUri.fsPath.length - ".drawio.svg".length;
+	let start = path.dirname(newFilePath).length + 1;
+	let end = newFilePath.length - ".drawio.svg".length;
 	let inputBoxOptions: vscode.InputBoxOptions = {
 		prompt: "Enter a new file name",
-		value: newFileUri.fsPath,
+		value: newFilePath,
 		valueSelection: [start, end]
 	};
 	let filePathFromInputBox = await vscode.window.showInputBox(inputBoxOptions) ?? "";
 	if (filePathFromInputBox !== "") {
+		if (vscode.workspace.workspaceFolders?.length === 1) {
+			newFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, filePathFromInputBox);
+		} else {
 		newFileUri = vscode.Uri.file(filePathFromInputBox);
 	}
 	
