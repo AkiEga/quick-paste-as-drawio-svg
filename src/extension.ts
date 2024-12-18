@@ -122,8 +122,14 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 			let imgDir:string = conf.get("img-dir")??"";
 			imgDir = await resolveImgDir(imgDir, editor);
 			let prefix:string = conf.get("img-file-prefix") ?? "";
-			newFileUri = await GenNewFileUri(imgDir, prefix);		
-			createDrawioSvgFile(newFileUri, ci);
+			let newFileUri = await GenNewFileUri(imgDir, prefix);
+			if (newFileUri) {
+				createDrawioSvgFile(newFileUri, ci);
+			} else {
+				// cancel to create a new file
+				vscode.window.showInformationMessage("Canceled to create a new file!");
+				return;
+			}
 			
 			vscode.window.showInformationMessage(`write new file: ${newFileUri} from quick-paste-as-drawio-svg!`);
 		}
@@ -155,10 +161,9 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 	});
 }
 
-async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<vscode.Uri> {
+async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<vscode.Uri|undefined> {
 	// convert ${workspaceFolder} to actual workspace folder name
-
-	let newFileUri: vscode.Uri;
+	let newFileUri: vscode.Uri|undefined = undefined;
 	for (let id = 0; ; id++) {
 		let newFileName = `${prefix}_${id}.drawio.svg`;
 		newFileUri = vscode.Uri.joinPath(vscode.Uri.file(imgDir), newFileName);
@@ -185,9 +190,17 @@ async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<
 		if (vscode.workspace.workspaceFolders?.length === 1) {
 			newFileUri = vscode.Uri.joinPath(vscode.workspace.workspaceFolders[0].uri, filePathFromInputBox);
 		} else {
-		newFileUri = vscode.Uri.file(filePathFromInputBox);
+			newFileUri = vscode.Uri.file(filePathFromInputBox);
+		}
 	}
-	
+
+	if (fs.existsSync(newFileUri.fsPath)) {
+		let selected = await vscode.window.showQuickPick(["Overwrite", "Cancel"], {placeHolder: "The file already exists. Overwrite or Cancel?"});
+		if (selected === "Cancel") {
+			newFileUri = undefined;
+		} 
+	} 
+		
 	return Promise.resolve(newFileUri);
 }
 
