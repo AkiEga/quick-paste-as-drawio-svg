@@ -11,6 +11,7 @@
 	],
 	"settings": {
 		"quick-paste-as-drawio-svg.img-dir": "${workspaceFolder:sandbox}/img",
+		// "quick-paste-as-drawio-svg.img-dir": "./img",
 		"quick-paste-as-drawio-svg.img-file-prefix": "fig"
 	}
 }
