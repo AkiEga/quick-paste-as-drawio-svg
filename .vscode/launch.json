@@ -11,7 +11,8 @@
 			"request": "launch",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceFolder}",
-				"${workspaceFolder}/src/test/sandbox_workspace"
+				"${workspaceFolder}/src/test/sandbox_workspace",
+				// "${workspaceFolder}/src/test/sandbox_workspace/sandbox_workspace.code-workspace"
 			],
 			"outFiles": [
 				"${workspaceFolder}/out/*.js"
