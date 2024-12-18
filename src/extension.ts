@@ -73,28 +73,31 @@ export function createDrawioSvgFile(tarUri: vscode.Uri, ci: ClipboardImage) {
 export async function resolveImgDir(imgDir: string, editor: vscode.TextEditor | undefined) {
 	let ret = imgDir;
 	// replace ${workspaceFolder} to actual workspace folder path
-	let workspaceFolders = vscode.workspace.workspaceFolders;
-	if (workspaceFolders && workspaceFolders.length === 1) {
-		if (ret.startsWith("${workspaceFolder}")) {
-			ret = ret.replace(/\${workspaceFolder}/g, workspaceFolders[0].uri.fsPath);
-		} else {
-			ret = path.join(workspaceFolders[0].uri.fsPath, ret);
-		}
-	} else if(workspaceFolders && workspaceFolders.length > 1) {
+	let wss = vscode.workspace.workspaceFolders;
+	if (ret.startsWith("${workspaceFolder}") && wss && wss.length === 1) {
+		// replace ${workspaceFolder} to actual workspace folder path
+		ret = ret.replace(/\${workspaceFolder}/g, wss[0].uri.fsPath);
+
+	} else if (ret.startsWith("${workspaceFolder:")  && wss && wss.length > 1) {
 		// replace ${workspaceFolder:wsName} to actual workspace folder name
 		let m = RegExp(/\${workspaceFolder:(?<wsName>[^}]+)}/g).exec(imgDir);
 		if (m?.groups?.wsName) {
-			let ws = await vscode.workspace.workspaceFolders?.find(
-				(ws)=>ws.name === m?.groups?.wsName);
+			let wsName = m.groups.wsName;
+			let ws = await vscode.workspace.workspaceFolders?.find((ws)=>ws.name === wsName);
 			if (ws) {
-				ret = ret.replace(ws.uri.fsPath, ws.name);
+				ret = ret.replace(/\${workspaceFolder:[^}]+}/g, ws.uri.fsPath);
 			}
 		}
-	}
-	// replace current dir
-	if (ret.startsWith("./") && editor) {
+
+	} else if (ret.startsWith("./") && editor) {
+		// replace current dir(./) to actual workspace folder path
 		let curDir = path.dirname(editor.document.uri.fsPath);
 		ret = ret.replace(".", curDir);
+
+	} else {
+		if (wss && wss.length === 1) {
+			ret = path.join(wss[0].uri.fsPath, ret);
+		}
 	}
 	return ret;
 }
