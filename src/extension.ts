@@ -106,7 +106,7 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 	// The code you place here will be executed every time your command is executed
 	// Display a message box to the user
 	let pasteMode = "image";
-	let newFileUri = vscode.Uri.file("");
+	let newFileUri:vscode.Uri = vscode.Uri.file("");
 	let insertText = "";
 	try {
 		// get image data from clipboard
@@ -119,19 +119,18 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 			// Touch(=create=write) an drawio.svg file
 			// Check if new file is already exist
 			let conf = vscode.workspace.getConfiguration("quick-paste-as-drawio-svg");
-			let imgDir:string = conf.get("img-dir")??"";
-			imgDir = await resolveImgDir(imgDir, editor);
+			let imgDir = await resolveImgDir(conf.get("img-dir")??"", editor);
 			let prefix:string = conf.get("img-file-prefix") ?? "";
-			let newFileUri = await GenNewFileUri(imgDir, prefix);
-			if (newFileUri) {
+			let ret = await GenNewFileUri(imgDir, prefix);
+			if (ret) {
+				newFileUri = ret;
 				createDrawioSvgFile(newFileUri, ci);
+				vscode.window.showInformationMessage(`write new file: ${newFileUri} from quick-paste-as-drawio-svg!`);
 			} else {
 				// cancel to create a new file
 				vscode.window.showInformationMessage("Canceled to create a new file!");
 				return;
 			}
-			
-			vscode.window.showInformationMessage(`write new file: ${newFileUri} from quick-paste-as-drawio-svg!`);
 		}
 	} catch (error) {
 		console.error("[Error] failed to write a drawio.svg file from quick-paste-as-drawio-svg extension!");
