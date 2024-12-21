@@ -160,7 +160,7 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 	});
 }
 
-async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<vscode.Uri|undefined> {
+export async function GenNewFileUri(imgDir: string = "", prefix: string = ""): Promise<vscode.Uri|undefined> {
 	// convert ${workspaceFolder} to actual workspace folder name
 	let newFileUri: vscode.Uri|undefined = undefined;
 	for (let id = 0; ; id++) {
