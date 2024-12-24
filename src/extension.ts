@@ -4,56 +4,7 @@ import * as vscode from 'vscode';
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
-import ChildProcess from 'child_process';
-
-class ClipboardImage {
-	img: string = "";
-	width: number = 0;
-	height: number = 0;
-}
-
-// read clipboard image data as Uint8Array
-export function readClipboardImage(): ClipboardImage {
-	let clipboardImage: ClipboardImage = new ClipboardImage();
-	try {
-		// exec command to get clipboard image data with powershell		
-		if (os.platform() === "win32") {
-			// TODO: implement to get clipboard image data with powershell
-			// let pwshcmd = `
-			// Add-Type -AssemblyName System.Windows.Forms;
-			// $obj = [System.Windows.Forms.Clipboard]::GetDataObject();
-			// if ($true -eq $obj.ContainsImage()) {
-			// 	$image = [System.Windows.Forms.Clipboard]::GetImage()
-			// 	$ms = New-Object -TypeName System.IO.MemoryStream;
-			// 	$image.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png);
-			// 	$encoded = [System.Convert]::ToBase64String($ms.GetBuffer());
-			// 	$json = @{"img"=$encoded;"width"=$image.Width; "height"=$image.Height}
-			// } else {
-			// 	$json = @{"img"="";"width"=0; "height"=0}
-			// }
-			// $json | ConvertTo-Json`;
-			let pwshcmd = `
-			Add-Type -AssemblyName System.Windows.Forms;
-			$obj = [System.Windows.Forms.Clipboard]::GetDataObject();
-			if ($true -eq $obj.ContainsImage()) {
-				$image = [System.Windows.Forms.Clipboard]::GetImage()
-				$json = @{"img"="It will be insert base64 str";"width"=$image.Width; "height"=$image.Height}
-			} else {
-				$json = @{"img"="";"width"=0; "height"=0}
-			}
-			$json | ConvertTo-Json`;
-			// exec command to get clipboard image data with powershell
-			let clipboardImageJson = ChildProcess.execSync(pwshcmd, {shell: "pwsh.exe", encoding: "utf8"});
-			// convert json string to ClipboardImage object
-			clipboardImage = JSON.parse(clipboardImageJson);
-		} else {
-			vscode.window.showInformationMessage(`This extension is not support this platform: ${os.platform()}!`);
-		}
-	} catch (error) {
-		console.error("[Error] failed to read clipboard image data!");
-	}
-	return clipboardImage;
-}
+import { ClipboardImage, readClipboardImage } from './ClipboardImage';
 
 export function createDrawioSvgFile(tarUri: vscode.Uri, ci: ClipboardImage) {		
 	let newFileContentStr = "";
@@ -109,13 +60,13 @@ export async function quickPasteAsDrawioSvg(editor: vscode.TextEditor, ws: vscod
 	let newFileUri:vscode.Uri = vscode.Uri.file("");
 	let insertText = "";
 	try {
-		// get image data from clipboard
-		let ci = readClipboardImage();
-		if (ci.img === "") {
+		// get text data from clipboard
+		insertText = await vscode.env.clipboard.readText();
+		if (insertText && insertText !== "") {
 			pasteMode = "text";
-			// get text data from clipboard
-			insertText = await vscode.env.clipboard.readText();
 		} else {
+			// get image data from clipboard
+			let ci = await readClipboardImage();
 			// Touch(=create=write) an drawio.svg file
 			// Check if new file is already exist
 			let conf = vscode.workspace.getConfiguration("quick-paste-as-drawio-svg");
